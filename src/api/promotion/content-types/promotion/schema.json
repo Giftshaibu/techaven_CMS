@@ -1,0 +1,206 @@
+{
+  "kind": "collectionType",
+  "collectionName": "promotions",
+  "info": {
+    "singularName": "promotion",
+    "pluralName": "promotions",
+    "displayName": "Promotion",
+    "description": "Scheduled Techaven merchandising content"
+  },
+  "options": { "draftAndPublish": true },
+  "pluginOptions": {},
+  "attributes": {
+    "internalName": { "type": "string", "required": true, "maxLength": 120 },
+    "slug": { "type": "uid", "targetField": "internalName", "required": true },
+    "headline": { "type": "string", "required": true, "maxLength": 180 },
+    "subheadline": { "type": "string", "maxLength": 240 },
+    "body": { "type": "text" },
+    "placement": {
+      "type": "enumeration",
+      "required": true,
+      "enum": [
+        "home_hero",
+        "categories_hero",
+        "category_hero",
+        "products_hero",
+        "shops_hero",
+        "shop_hero",
+        "catalogs_hero",
+        "deals_hero",
+        "compare_hero",
+        "trade_in_hero",
+        "help_hero",
+        "search_hero",
+        "home_banner_1",
+        "home_product_rail_1",
+        "home_banner_2",
+        "home_shop_rail",
+        "home_inline_1",
+        "category_inline_1",
+        "category_inline_2",
+        "search_inline_1",
+        "deals_inline_1",
+        "shops_inline_1",
+        "shop_inline_1",
+        "product_inline_1",
+        "catalog_inline_1",
+        "promotion_page_hero",
+        "promotion_page_inline_1",
+        "promotion_page_inline_2",
+        "promotion_page_inline_3",
+        "header_mega_menu",
+        "site_announcement"
+      ]
+    },
+    "layout": {
+      "type": "enumeration",
+      "required": true,
+      "enum": [
+        "hero",
+        "hero_product",
+        "split",
+        "banner",
+        "lifestyle_banner",
+        "product_rail",
+        "product_grid",
+        "shop_rail",
+        "service_grid",
+        "card_rail",
+        "flash_deals",
+        "coupon",
+        "editorial",
+        "announcement"
+      ]
+    },
+    "presentation": {
+      "type": "enumeration",
+      "enum": [
+        "standard",
+        "product_led",
+        "lifestyle",
+        "dark_editorial",
+        "image_top",
+        "image_side",
+        "image_right",
+        "background_image",
+        "compact"
+      ],
+      "default": "standard"
+    },
+    "slotGroup": { "type": "string", "maxLength": 120 },
+    "groupOrder": { "type": "integer", "default": 0 },
+    "imagePosition": {
+      "type": "enumeration",
+      "enum": ["left", "right", "top", "background"],
+      "default": "right"
+    },
+    "theme": {
+      "type": "enumeration",
+      "required": true,
+      "enum": ["light", "dark", "brand", "brand_soft", "neutral"]
+    },
+    "desktopBackground": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "mobileBackground": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "foregroundImage": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "seoImage": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "altTextOverride": { "type": "string", "maxLength": 240 },
+    "eyebrow": { "type": "string", "maxLength": 80 },
+    "badge": { "type": "string", "maxLength": 80 },
+    "finePrint": { "type": "text" },
+    "campaignIntro": { "type": "text" },
+    "showCountdown": { "type": "boolean", "default": false },
+    "couponCode": { "type": "string", "maxLength": 80 },
+    "instructionOne": { "type": "string", "maxLength": 180 },
+    "instructionTwo": { "type": "string", "maxLength": 180 },
+    "instructionThree": { "type": "string", "maxLength": 180 },
+    "ctaLabel": { "type": "string", "maxLength": 80 },
+    "targetType": {
+      "type": "enumeration",
+      "enum": [
+        "product",
+        "shop",
+        "category",
+        "catalog",
+        "search",
+        "compare",
+        "trade_in",
+        "deals",
+        "promotion_page",
+        "internal_path",
+        "external_url",
+        "none"
+      ],
+      "default": "none"
+    },
+    "targetValue": { "type": "string", "maxLength": 500 },
+    "externalUrl": { "type": "string", "maxLength": 2048 },
+    "secondaryCtaLabel": { "type": "string", "maxLength": 80 },
+    "secondaryTargetType": {
+      "type": "enumeration",
+      "enum": [
+        "product",
+        "shop",
+        "category",
+        "catalog",
+        "search",
+        "compare",
+        "trade_in",
+        "deals",
+        "promotion_page",
+        "internal_path",
+        "external_url",
+        "none"
+      ],
+      "default": "none"
+    },
+    "secondaryTargetValue": { "type": "string", "maxLength": 500 },
+    "secondaryExternalUrl": { "type": "string", "maxLength": 2048 },
+    "targetCategorySlug": { "type": "string", "maxLength": 160 },
+    "targetShopExternalId": { "type": "string", "maxLength": 160 },
+    "targetBrandSlug": { "type": "string", "maxLength": 160 },
+    "targetCampaignSlug": { "type": "string", "maxLength": 160 },
+    "seoTitle": { "type": "string", "maxLength": 180 },
+    "seoDescription": { "type": "text", "maxLength": 320 },
+    "startsAt": { "type": "datetime" },
+    "endsAt": { "type": "datetime" },
+    "priority": { "type": "integer", "required": true, "default": 50 },
+    "commerceOfferKey": { "type": "string", "maxLength": 160 },
+    "products": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::external-product.external-product"
+    },
+    "anchorProduct": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::external-product.external-product"
+    },
+    "secondaryProducts": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::external-product.external-product"
+    },
+    "shops": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::external-shop.external-shop"
+    },
+    "notes": { "type": "text", "private": true }
+  }
+}

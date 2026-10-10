@@ -1,0 +1,46 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DATABASE_NAME:-techaven_cms}
+      POSTGRES_USER: ${DATABASE_USERNAME:-techaven}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:?DATABASE_PASSWORD is required}
+    volumes:
+      - techaven_cms_postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE_USERNAME:-techaven} -d ${DATABASE_NAME:-techaven_cms}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  strapi:
+    build: .
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file: .env
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    environment:
+      DATABASE_CLIENT: postgres
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${DATABASE_NAME:-techaven_cms}
+      DATABASE_USERNAME: ${DATABASE_USERNAME:-techaven}
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+      - "${PORT:-1337}:1337"
+    volumes:
+      - techaven_cms_uploads:/opt/app/public/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:1337/api/health >/dev/null || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+
+volumes:
+  techaven_cms_postgres:
+  techaven_cms_uploads:

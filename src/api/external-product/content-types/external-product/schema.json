@@ -1,0 +1,22 @@
+{
+  "kind": "collectionType",
+  "collectionName": "external_products",
+  "info": {
+    "singularName": "external-product",
+    "pluralName": "external-products",
+    "displayName": "External Product",
+    "description": "Non-authoritative commerce product reference"
+  },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "externalId": { "type": "string", "required": true, "unique": true, "maxLength": 255 },
+    "slug": { "type": "string", "required": true, "unique": true, "maxLength": 255 },
+    "name": { "type": "string", "required": true, "maxLength": 255 },
+    "brand": { "type": "string", "maxLength": 160 },
+    "category": { "type": "string", "maxLength": 160 },
+    "thumbnailUrl": { "type": "string", "maxLength": 2048 },
+    "active": { "type": "boolean", "required": true, "default": true },
+    "sourceUpdatedAt": { "type": "datetime" }
+  }
+}

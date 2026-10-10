@@ -1,0 +1,22 @@
+{
+  "kind": "collectionType",
+  "collectionName": "external_shops",
+  "info": {
+    "singularName": "external-shop",
+    "pluralName": "external-shops",
+    "displayName": "External Shop",
+    "description": "Non-authoritative commerce shop reference"
+  },
+  "options": { "draftAndPublish": false },
+  "pluginOptions": {},
+  "attributes": {
+    "externalId": { "type": "string", "required": true, "unique": true, "maxLength": 255 },
+    "slug": { "type": "string", "required": true, "unique": true, "maxLength": 255 },
+    "name": { "type": "string", "required": true, "maxLength": 255 },
+    "logoUrl": { "type": "string", "maxLength": 2048 },
+    "locationLabel": { "type": "string", "maxLength": 255 },
+    "verified": { "type": "boolean", "default": false },
+    "active": { "type": "boolean", "required": true, "default": true },
+    "sourceUpdatedAt": { "type": "datetime" }
+  }
+}

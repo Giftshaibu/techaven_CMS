@@ -1,0 +1,45 @@
+{
+  "name": "techaven-promotion",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Techaven promotions and merchandising CMS",
+  "scripts": {
+    "build": "strapi build",
+    "console": "strapi console",
+    "deploy": "strapi deploy",
+    "dev": "strapi develop",
+    "develop": "strapi develop",
+    "start": "strapi start",
+    "strapi": "strapi",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "upgrade": "npx @strapi/upgrade latest",
+    "upgrade:dry": "npx @strapi/upgrade latest --dry"
+  },
+  "dependencies": {
+    "@strapi/database": "5.55.1",
+    "@strapi/plugin-users-permissions": "5.55.1",
+    "@strapi/strapi": "5.55.1",
+    "pg": "8.20.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-router-dom": "^6.30.3",
+    "styled-components": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^18",
+    "@types/react-dom": "^18",
+    "typescript": "^5",
+    "vitest": "3.2.4"
+  },
+  "engines": {
+    "node": ">=20.0.0 <=26.x.x",
+    "npm": ">=6.0.0"
+  },
+  "strapi": {
+    "uuid": "43bc1ac8-782e-4c87-890b-4232011cf583",
+    "installId": "86195cd44b20a0458fb6a43f041756ca0e746ba509696b9260cb51bdbd7260bd"
+  }
+}
