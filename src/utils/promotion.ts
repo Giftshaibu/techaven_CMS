@@ -314,7 +314,10 @@ type Media =
 
 export function absoluteMediaUrl(url: string, publicUrl: string): string {
   if (/^https?:\/\//i.test(url)) return url;
-  return new URL(url, `${publicUrl.replace(/\/$/, "")}/`).toString();
+  const base = new URL(`${publicUrl.replace(/\/$/, "")}/`);
+  // Upload paths belong beneath the CMS mount, including when it uses /cms.
+  const relative = /^\/?uploads\//.test(url) ? url.replace(/^\//, "") : url;
+  return new URL(relative, base).toString();
 }
 
 export function normalizeMedia(

@@ -134,6 +134,18 @@ describe("promotion activity and normalization", () => {
     expect(isActiveAt({ endsAt: "2026-09-24T00:00:00Z" }, now)).toBe(false);
   });
 
+  it("keeps uploaded media beneath a CMS proxy mount", () => {
+    expect(absoluteMediaUrl("/uploads/mobile.jpg", "https://app.techavenmw.com/cms")).toBe(
+      "https://app.techavenmw.com/cms/uploads/mobile.jpg",
+    );
+    expect(absoluteMediaUrl("uploads/desktop.jpg", "https://app.techavenmw.com/cms/")).toBe(
+      "https://app.techavenmw.com/cms/uploads/desktop.jpg",
+    );
+    expect(absoluteMediaUrl("https://images.example/photo.jpg", "https://app.techavenmw.com/cms")).toBe(
+      "https://images.example/photo.jpg",
+    );
+  });
+
   it("creates absolute media URLs and exposes only the public shape", () => {
     expect(absoluteMediaUrl("/uploads/hero.webp", "https://cms.example")).toBe(
       "https://cms.example/uploads/hero.webp",
