@@ -7,3 +7,8 @@ build
 coverage
 public/uploads/*
 !public/uploads/.gitkeep
+
+.env.*
+!.env.example
+dist
+.strapi
