@@ -580,10 +580,23 @@ export interface ApiPromotionPromotion extends Struct.CollectionTypeSchema {
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 240;
       }>;
+    anchorProduct: Schema.Attribute.Relation<
+      'oneToOne',
+      'api::external-product.external-product'
+    >;
+    badge: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 80;
+      }>;
     body: Schema.Attribute.Text;
+    campaignIntro: Schema.Attribute.Text;
     commerceOfferKey: Schema.Attribute.String &
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 160;
+      }>;
+    couponCode: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 80;
       }>;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
@@ -598,9 +611,31 @@ export interface ApiPromotionPromotion extends Struct.CollectionTypeSchema {
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 2048;
       }>;
+    eyebrow: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 80;
+      }>;
+    finePrint: Schema.Attribute.Text;
     foregroundImage: Schema.Attribute.Media<'images'>;
+    groupOrder: Schema.Attribute.Integer & Schema.Attribute.DefaultTo<0>;
     headline: Schema.Attribute.String &
       Schema.Attribute.Required &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 180;
+      }>;
+    imagePosition: Schema.Attribute.Enumeration<
+      ['left', 'right', 'top', 'background']
+    > &
+      Schema.Attribute.DefaultTo<'right'>;
+    instructionOne: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 180;
+      }>;
+    instructionThree: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 180;
+      }>;
+    instructionTwo: Schema.Attribute.String &
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 180;
       }>;
@@ -612,10 +647,17 @@ export interface ApiPromotionPromotion extends Struct.CollectionTypeSchema {
     layout: Schema.Attribute.Enumeration<
       [
         'hero',
+        'hero_product',
         'split',
         'banner',
+        'lifestyle_banner',
         'product_rail',
+        'product_grid',
         'shop_rail',
+        'service_grid',
+        'card_rail',
+        'flash_deals',
+        'coupon',
         'editorial',
         'announcement',
       ]
@@ -632,20 +674,53 @@ export interface ApiPromotionPromotion extends Struct.CollectionTypeSchema {
     placement: Schema.Attribute.Enumeration<
       [
         'home_hero',
-        'home_banner',
-        'home_product_rail',
-        'home_shop_rail',
-        'home_inline',
+        'categories_hero',
         'category_hero',
-        'category_inline',
-        'shop_inline',
+        'products_hero',
+        'shops_hero',
+        'shop_hero',
+        'catalogs_hero',
         'deals_hero',
-        'deals_inline',
-        'search_inline',
+        'compare_hero',
+        'trade_in_hero',
+        'help_hero',
+        'search_hero',
+        'home_banner_1',
+        'home_product_rail_1',
+        'home_banner_2',
+        'home_shop_rail',
+        'home_inline_1',
+        'category_inline_1',
+        'category_inline_2',
+        'search_inline_1',
+        'deals_inline_1',
+        'shops_inline_1',
+        'shop_inline_1',
+        'product_inline_1',
+        'catalog_inline_1',
+        'promotion_page_hero',
+        'promotion_page_inline_1',
+        'promotion_page_inline_2',
+        'promotion_page_inline_3',
+        'header_mega_menu',
         'site_announcement',
       ]
     > &
       Schema.Attribute.Required;
+    presentation: Schema.Attribute.Enumeration<
+      [
+        'standard',
+        'product_led',
+        'lifestyle',
+        'dark_editorial',
+        'image_top',
+        'image_side',
+        'image_right',
+        'background_image',
+        'compact',
+      ]
+    > &
+      Schema.Attribute.DefaultTo<'standard'>;
     priority: Schema.Attribute.Integer &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<50>;
@@ -654,15 +729,78 @@ export interface ApiPromotionPromotion extends Struct.CollectionTypeSchema {
       'api::external-product.external-product'
     >;
     publishedAt: Schema.Attribute.DateTime;
+    secondaryCtaLabel: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 80;
+      }>;
+    secondaryExternalUrl: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 2048;
+      }>;
+    secondaryProducts: Schema.Attribute.Relation<
+      'manyToMany',
+      'api::external-product.external-product'
+    >;
+    secondaryTargetType: Schema.Attribute.Enumeration<
+      [
+        'product',
+        'shop',
+        'category',
+        'catalog',
+        'search',
+        'compare',
+        'trade_in',
+        'deals',
+        'promotion_page',
+        'internal_path',
+        'external_url',
+        'none',
+      ]
+    > &
+      Schema.Attribute.DefaultTo<'none'>;
+    secondaryTargetValue: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 500;
+      }>;
+    seoDescription: Schema.Attribute.Text &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 320;
+      }>;
+    seoImage: Schema.Attribute.Media<'images'>;
+    seoTitle: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 180;
+      }>;
     shops: Schema.Attribute.Relation<
       'manyToMany',
       'api::external-shop.external-shop'
     >;
+    showCountdown: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    slotGroup: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 120;
+      }>;
     slug: Schema.Attribute.UID<'internalName'> & Schema.Attribute.Required;
     startsAt: Schema.Attribute.DateTime;
     subheadline: Schema.Attribute.String &
       Schema.Attribute.SetMinMaxLength<{
         maxLength: 240;
+      }>;
+    targetBrandSlug: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 160;
+      }>;
+    targetCampaignSlug: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 160;
+      }>;
+    targetCategorySlug: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 160;
+      }>;
+    targetShopExternalId: Schema.Attribute.String &
+      Schema.Attribute.SetMinMaxLength<{
+        maxLength: 160;
       }>;
     targetType: Schema.Attribute.Enumeration<
       [
@@ -674,6 +812,7 @@ export interface ApiPromotionPromotion extends Struct.CollectionTypeSchema {
         'compare',
         'trade_in',
         'deals',
+        'promotion_page',
         'internal_path',
         'external_url',
         'none',
