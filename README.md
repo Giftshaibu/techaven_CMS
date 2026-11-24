@@ -136,6 +136,12 @@ The unit and contract suites cover promotion schedules, CTA/layout rules, normal
 
 - Terminate HTTPS at a trusted load balancer/reverse proxy, set `PUBLIC_URL`, and set `IS_BEHIND_PROXY=true`.
 - Set `FRONTEND_URL` to the required comma-separated origins. CORS also permits `http://localhost:3001` for local storefront development. Protect `/admin`, and audit the Promotion Editor role and all public permissions.
+
+### Existing media uploaded manually to R2
+
+`scripts/migrate-r2-media.cjs` replaces local `/uploads/` URLs in Strapi's media records, previews and generated formats with paths at `CMS_MEDIA_BASE_URL` (default `https://images.techavenmw.com`). Upload the extracted original files and all generated thumbnails to the bucket root first. Absolute external URLs are preserved; reruns are idempotent. This updates existing media references, not the provider for future uploads.
+
+Run `node scripts/migrate-r2-media.cjs` for a dry run. It checks each destination with an HTTPS HEAD request and refuses to apply if an image is missing. Before applying, take a PostgreSQL backup and stop the CMS to prevent concurrent media writes. Run `node scripts/migrate-r2-media.cjs --apply`, then restart the CMS. The script reads `.env` from the current directory; use the CMS repository root. Keep the database backup for rollback. No R2 credentials are needed to check public image URLs. Future uploads still use local storage until an S3 upload provider is configured.
 - Rotate `STRAPI_SYNC_TOKEN` and Strapi secrets through the deployment secret manager; never commit `.env`.
 - Replace local upload storage with a supported object-storage provider before running multiple replicas. Local Docker uploads are persisted but are not shared across hosts.
 - Back up both PostgreSQL and uploads. Test restoration into a separate environment. A database backup without matching media is incomplete.

@@ -5,7 +5,15 @@ const config: Core.Config.Middlewares = [
   'strapi::errors',
   {
     name: 'strapi::security',
-    config: { contentSecurityPolicy: { useDefaults: true } },
+    config: {
+      contentSecurityPolicy: {
+        useDefaults: true,
+        directives: {
+          'img-src': ["'self'", 'data:', 'blob:', 'https://market-assets.strapi.io', 'https://images.techavenmw.com'],
+          'media-src': ["'self'", 'data:', 'blob:', 'https://images.techavenmw.com'],
+        },
+      },
+    },
   },
   {
     name: 'strapi::cors',
