@@ -15,6 +15,47 @@ const valid = {
 };
 
 describe("promotion validation", () => {
+  it("validates square link tiles and optional active product selections", () => {
+    const tile = {
+      ...valid,
+      layout: "square_tile",
+      placement: "home_square_tiles",
+      slotGroup: "home-tiles",
+      headline: "iPhones",
+      desktopBackground: { id: 1, width: 800, height: 800 },
+    };
+    expect(validatePromotion(tile)).toEqual([expect.objectContaining({ path: "ctaLabel" })]);
+    expect(validatePromotion({ ...tile, ctaLabel: "Shop", targetType: "internal_path", targetValue: "/products" }))
+      .toEqual([]);
+    const products = [{ externalId: "device:1", active: true }, { externalId: "device:2", active: true }];
+    expect(validatePromotion({ ...tile, products })).toEqual([]);
+    expect(validatePromotion({ ...tile, products: products.slice(0, 1) }))
+      .toEqual([expect.objectContaining({ path: "railProducts" })]);
+    expect(validatePromotion({ ...tile, layout: "side_banner_with_rail", placement: "home_promo_rails", products }))
+      .toEqual([]);
+  });
+
+  it("requires complete banner rails with distinct active product references", () => {
+    const banner = {
+      ...valid,
+      layout: "banner_with_rail",
+      placement: "home_promo_rails",
+      headline: "Featured products",
+      desktopBackground: { url: "/uploads/banner.png" },
+      products: [
+        { externalId: "device:1", active: true },
+        { externalId: "device:2", active: true },
+      ],
+    };
+    expect(validatePromotion(banner)).toEqual([]);
+    expect(validatePromotion({ ...banner, showCountdown: true }).map(({ path }) => path))
+      .toEqual(["startsAt", "endsAt"]);
+    expect(validatePromotion({ ...banner, products: [banner.products[0], banner.products[0]] }))
+      .toEqual([expect.objectContaining({ path: "railProducts" })]);
+    expect(validatePromotion({ ...banner, desktopBackground: null, placement: "home_hero" })
+      .map(({ path }) => path)).toEqual(["layout", "desktopBackground"]);
+  });
+
   it("accepts a basic promotion", () =>
     expect(validatePromotion(valid)).toEqual([]));
 

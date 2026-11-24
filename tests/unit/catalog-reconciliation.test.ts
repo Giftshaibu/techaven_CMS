@@ -24,6 +24,41 @@ describe('catalog reconciliation feed', () => {
     expect(fetch).toHaveBeenNthCalledWith(1, expect.objectContaining({ pathname: '/api/v2/integrations/promotions/devices' }), expect.objectContaining({ headers: expect.objectContaining({ Authorization: 'Bearer secret' }) }));
   });
 
+  it('reconciles a full snapshot without changing the event cursor', async () => {
+    const set = vi.fn();
+    const updateMany = vi.fn();
+    const findMany = vi.fn().mockResolvedValue([
+      { id: 1, externalId: 'device:1' },
+      { id: 2, externalId: 'device:2' },
+    ]);
+    const strapi = {
+      store: () => ({ get: vi.fn().mockResolvedValue('20'), set }),
+      db: { query: () => ({ findMany, updateMany }) },
+      log: { info: vi.fn(), error: vi.fn() },
+    } as any;
+    const service = createService({ strapi }) as any;
+    service.upsert = vi.fn();
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ data: {
+        items: [{ externalId: 'device:1', slug: 'one', name: 'One', active: true, shopIds: ['7'], shopNames: 'Shop' }],
+        next_cursor: '1',
+        has_more: false,
+      } }),
+    }));
+
+    await service.reconcileKind('product', 'http://commerce.test', 'secret', true);
+
+    expect(vi.mocked(fetch).mock.calls[0][0].toString()).toContain('after=0&limit=25&snapshot=true');
+    expect(service.upsert).toHaveBeenCalledWith('product', expect.objectContaining({ shopIds: ['7'] }));
+    expect(updateMany).toHaveBeenCalledTimes(1);
+    expect(updateMany).toHaveBeenCalledWith({
+      where: expect.objectContaining({ id: 2 }),
+      data: expect.objectContaining({ active: false }),
+    });
+    expect(set).not.toHaveBeenCalled();
+  });
+
   it('does not persist a cursor when a page fails', async () => {
     const set = vi.fn();
     const strapi = { store: () => ({ get: vi.fn().mockResolvedValue('7'), set }), log: { info: vi.fn(), error: vi.fn() } } as any;

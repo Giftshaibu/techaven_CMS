@@ -1,5 +1,5 @@
 export const PRODUCT_FIELDS = [
-  'externalId', 'slug', 'name', 'brand', 'category', 'thumbnailUrl', 'active', 'sourceUpdatedAt',
+  'externalId', 'slug', 'name', 'brand', 'category', 'shopIds', 'shopNames', 'thumbnailUrl', 'active', 'sourceUpdatedAt',
 ] as const;
 export const SHOP_FIELDS = [
   'externalId', 'slug', 'name', 'logoUrl', 'locationLabel', 'verified', 'active', 'sourceUpdatedAt',
@@ -48,10 +48,17 @@ export function parseSyncPayload(kind: SyncKind, input: unknown): Record<string,
     if (typeof value !== 'string' || !value.trim()) errors[field] = 'Required non-empty string';
     else result[field] = value.trim();
   }
-  for (const field of kind === 'product' ? ['brand', 'category'] : ['locationLabel']) {
+  for (const field of kind === 'product' ? ['brand', 'category', 'shopNames'] : ['locationLabel']) {
     const value = payload[field];
     if (value !== undefined && value !== null && typeof value !== 'string') errors[field] = 'Must be a string';
+    else if (value === null) result[field] = null;
     else if (typeof value === 'string') result[field] = value.trim() || null;
+  }
+
+  if (kind === 'product' && payload.shopIds !== undefined) {
+    if (!Array.isArray(payload.shopIds) || !payload.shopIds.every((id) => typeof id === 'string'))
+      errors.shopIds = 'Must be an array of shop IDs';
+    else result.shopIds = payload.shopIds;
   }
 
   const urlField = kind === 'product' ? 'thumbnailUrl' : 'logoUrl';

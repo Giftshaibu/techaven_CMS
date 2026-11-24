@@ -1,5 +1,22 @@
 import type { Core } from '@strapi/strapi';
 
+let reconciliation: Promise<void> | undefined;
+
+async function reconcile(strapi: Core.Strapi, full = false) {
+  if (process.env.CATALOG_RECONCILIATION_ENABLED !== 'true') return;
+  if (reconciliation) {
+    if (!full) return;
+    await reconciliation.catch(() => undefined);
+  }
+  const run = strapi.service('api::catalog-sync.catalog-sync').reconcile(full);
+  reconciliation = run;
+  try {
+    await run;
+  } finally {
+    reconciliation = undefined;
+  }
+}
+
 const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Server => ({
   host: env('HOST', '0.0.0.0'),
   port: env.int('PORT', 1337),
@@ -14,11 +31,8 @@ const config = ({ env }: Core.Config.Shared.ConfigParams): Core.Config.Server =>
   cron: {
     enabled: true,
     tasks: {
-      '0 */6 * * *': async ({ strapi }) => {
-        if (process.env.CATALOG_RECONCILIATION_ENABLED === 'true') {
-          await strapi.service('api::catalog-sync.catalog-sync').reconcile();
-        }
-      },
+      '* * * * *': ({ strapi }) => reconcile(strapi),
+      '0 */6 * * *': ({ strapi }) => reconcile(strapi, true),
     },
   },
 });

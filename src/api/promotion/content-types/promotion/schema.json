@@ -12,7 +12,7 @@
   "attributes": {
     "internalName": { "type": "string", "required": true, "maxLength": 120 },
     "slug": { "type": "uid", "targetField": "internalName", "required": true },
-    "headline": { "type": "string", "required": true, "maxLength": 180 },
+    "headline": { "type": "string", "maxLength": 180 },
     "subheadline": { "type": "string", "maxLength": 240 },
     "body": { "type": "text" },
     "placement": {
@@ -33,6 +33,8 @@
         "search_hero",
         "home_banner_1",
         "home_product_rail_1",
+        "home_promo_rails",
+        "home_square_tiles",
         "home_banner_2",
         "home_shop_rail",
         "home_inline_1",
@@ -62,6 +64,9 @@
         "banner",
         "lifestyle_banner",
         "product_rail",
+        "banner_with_rail",
+        "side_banner_with_rail",
+        "square_tile",
         "product_grid",
         "shop_rail",
         "service_grid",
@@ -89,6 +94,7 @@
     },
     "slotGroup": { "type": "string", "maxLength": 120 },
     "groupOrder": { "type": "integer", "default": 0 },
+    "displayOrder": { "type": "integer", "default": 100 },
     "imagePosition": {
       "type": "enumeration",
       "enum": ["left", "right", "top", "background"],
@@ -100,6 +106,11 @@
       "enum": ["light", "dark", "brand", "brand_soft", "neutral"]
     },
     "desktopBackground": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": ["images"]
+    },
+    "desktopStripArtwork": {
       "type": "media",
       "multiple": false,
       "allowedTypes": ["images"]
@@ -181,6 +192,7 @@
     "endsAt": { "type": "datetime" },
     "priority": { "type": "integer", "required": true, "default": 50 },
     "commerceOfferKey": { "type": "string", "maxLength": 160 },
+    "railProducts": { "type": "customField", "customField": "global::promotion-products" },
     "products": {
       "type": "relation",
       "relation": "manyToMany",

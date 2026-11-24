@@ -43,29 +43,32 @@ export default ({ strapi }: { strapi: any }) => ({
     }
   },
 
-  async reconcile() {
+  async reconcile(full = false) {
     if (process.env.CATALOG_RECONCILIATION_ENABLED !== 'true') return;
     const baseUrl = process.env.TECHAVEN_COMMERCE_API_URL;
     const token = process.env.TECHAVEN_COMMERCE_API_TOKEN;
     if (!baseUrl || !token) throw new Error('Reconciliation requires commerce API URL and token');
 
     for (const kind of ['product', 'shop'] as const) {
-      await this.reconcileKind(kind, baseUrl, token);
+      await this.reconcileKind(kind, baseUrl, token, full);
     }
   },
 
-  async reconcileKind(kind: Kind, baseUrl: string, token: string) {
+  async reconcileKind(kind: Kind, baseUrl: string, token: string, full = false) {
     const store = strapi.store({ type: 'core', name: 'techaven-catalog-sync' });
     const cursorKey = `${kind}-cursor`;
     const priorCursor = (await store.get({ key: cursorKey })) as string | null;
-    let cursor = priorCursor || '0';
+    let cursor = full ? '0' : priorCursor || '0';
+    const seen = new Set<string>();
+    const startedAt = new Date().toISOString();
 
     try {
       do {
         const resource = kind === 'product' ? 'devices' : 'shops';
         const url = new URL(`/api/v2/integrations/promotions/${resource}`, baseUrl);
         url.searchParams.set('after', cursor);
-        url.searchParams.set('limit', '250');
+        url.searchParams.set('limit', full ? '25' : '250');
+        if (full) url.searchParams.set('snapshot', 'true');
         const response = await fetch(url, {
           headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' },
           signal: AbortSignal.timeout(30_000),
@@ -76,7 +79,9 @@ export default ({ strapi }: { strapi: any }) => ({
           throw new Error('Commerce API returned an invalid reconciliation payload');
         }
         for (const item of body.data.items) {
-          await this.upsert(kind, parseSyncPayload(kind, item));
+          const payload = parseSyncPayload(kind, item);
+          await this.upsert(kind, payload);
+          if (full) seen.add(String(payload.externalId));
         }
         const next = body.data.next_cursor;
         if (body.data.has_more && next === cursor) throw new Error('Commerce API cursor did not advance');
@@ -84,7 +89,24 @@ export default ({ strapi }: { strapi: any }) => ({
         if (!body.data.has_more) break;
       } while (true);
 
-      await store.set({ key: cursorKey, value: cursor });
+      if (full) {
+        const repository = strapi.db.query(UID_BY_KIND[kind]);
+        const missing = (await repository.findMany({
+          where: { active: true },
+          select: ["id", "externalId"],
+        })).filter((row: { externalId: string }) => !seen.has(row.externalId));
+        for (const row of missing) {
+          await repository.updateMany({
+            where: {
+              id: row.id,
+              $or: [{ sourceUpdatedAt: { $lt: startedAt } }, { sourceUpdatedAt: { $null: true } }],
+            },
+            data: { active: false, sourceUpdatedAt: startedAt },
+          });
+        }
+      } else {
+        await store.set({ key: cursorKey, value: cursor });
+      }
       strapi.log.info(JSON.stringify({ event: 'catalog_reconciliation_complete', kind, cursor }));
     } catch (error) {
       strapi.log.error(JSON.stringify({ event: 'catalog_reconciliation_failed', kind, message: (error as Error).message }));

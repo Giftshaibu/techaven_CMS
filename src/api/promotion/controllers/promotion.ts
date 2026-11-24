@@ -60,7 +60,7 @@ export default {
       const entities = await strapi
         .service("api::promotion.promotion")
         .findActive(placement);
-      ctx.set("Cache-Control", CACHE_CONTROL);
+      ctx.set("Cache-Control", placement === "home_promo_rails" ? "no-store" : CACHE_CONTROL);
       ctx.body = {
         data: entities.map((entity: any) =>
           normalizePromotion(entity, publicUrl(strapi)),

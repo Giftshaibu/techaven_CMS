@@ -118,6 +118,8 @@ When a CMS hero is missing, invalid, unpublished or outside its schedule, the st
 | `home_banner_1`       | After categories and hot products | `split`, `banner`, `lifestyle_banner`; normally a two-card split pair            |
 | `home_product_rail_1` | After category and shop browsing  | `product_rail`, `product_grid`, `flash_deals`                                    |
 | `home_inline_1`       | Before recommended products       | `service_grid`, `card_rail`, `banner`, `editorial`, `coupon`                     |
+| `home_promo_rails` | Before recommended products | `banner_with_rail` or `side_banner_with_rail`, sorted by Display Order |
+| `home_square_tiles` | Before the homepage promo rails | `square_tile`, up to four entries in one Slot Group |
 | `home_banner_2`       | After recommended products        | `card_rail`, `split`, `banner`, `lifestyle_banner`; normally three or four cards |
 | `home_shop_rail`      | Reserved curated-shop slot        | `shop_rail`; not currently mounted on the homepage, so do not use it yet         |
 
@@ -174,6 +176,8 @@ Every campaign inline record must set **Target Campaign Slug** to the main campa
 | `product_grid`     | A grid of live products                         | Select at least two active Products                                |
 | `shop_rail`        | Participating or featured shops                 | Select at least two active Shops                                   |
 | `service_grid`     | Three service/utility stories                   | Normally three records with the same Slot Group                    |
+| `square_tile`      | Square artwork tile with a link or shared product rail | Use one entry per tile in Homepage Square Tiles |
+| `side_banner_with_rail` | Left banner with scrolling product cards on the right | Use Homepage Promo Rails and the ordered Rail Products picker |
 | `card_rail`        | Three or four smaller campaign links            | Records share one Slot Group and use sequential Group Order values |
 | `flash_deals`      | Timed products with a countdown                 | At least two Products, Starts At, Ends At and Show Countdown       |
 | `coupon`           | A code or short redemption instructions         | A Coupon Code or at least two instruction fields                   |
@@ -323,7 +327,7 @@ Preview links are private, signed and expire after ten minutes. If Preview is bl
 | ----------------------------- | -------------------------------------------------------------------------------------------- |
 | Eyebrow                       | Currently not displayed; leave empty.                                                        |
 | Commerce Offer Key            | Reserved for a future commerce integration; leave empty unless a developer provides a value. |
-| Slot Group                    | Only for `split`, `service_grid` and `card_rail` groups.                                     |
+| Slot Group                    | For `split`, `service_grid`, `card_rail`, and `square_tile` groups.                                     |
 | Group Order                   | Only for grouped records; use `1`, `2`, `3`, `4`.                                            |
 | Foreground Image              | Fallback when Desktop Background is empty; it is not an additional layer.                    |
 | Secondary CTA fields          | Only when a second action is truly helpful.                                                  |
@@ -367,3 +371,36 @@ Use these three demonstrations when onboarding a content manager:
 3. **Create a campaign page:** create `promotion_page_hero`, attach products, then create a homepage banner whose `promotion_page` CTA points to the campaign slug.
 
 If the trainee can complete those three exercises, they can manage the complete promotion system safely.
+
+## Compact two-card split
+
+Split cards now have a **300 px minimum height** (previously 390 px). Stacked artwork is capped at **180 px** (previously 260 px). The side-image presentation uses a **180 px image minimum** (previously 260 px) at 1024 px and wider. Copy padding is **16 px on smaller screens** and **24 px from 768 px**. Cards can grow for longer copy. Preview both crop and copy before publishing.
+
+## Homepage square promo tiles
+
+Create one entry per tile with placement `home_square_tiles` and layout `square_tile`. Use the same **Slot Group** for up to four tiles and set **Group Order** to control their sequence. Add a headline and upload square **800 × 800 px** Desktop Background artwork. The storefront shows the headline over the image. Tiles display in four columns at 1024 px and wider and in a swipeable carousel below that width.
+
+- **Link tile**. Leave Rail Products empty and supply a CTA label and destination. The entire tile opens that destination.
+- **Product tile**. Select 2–12 active products in **Rail Products** and order them. Selecting the tile shows its products below the tiles. The first tile with products is selected by default. An optional CTA appears next to the rail heading. When fewer than two products are available, the product cards disappear and any configured CTA remains accessible.
+
+Preview each draft to check its artwork and destination. Once the group is published, check the homepage to confirm tile order, selection, and rail behavior at desktop and mobile widths.
+
+## Side-by-side banner and product carousel
+
+Choose `side_banner_with_rail` in `home_promo_rails` to put the banner on the left and the product carousel on the right at 1024 px and wider. Below that width the banner appears above the carousel. Upload a **900 × 1200 px** Desktop Background and optionally a **1200 × 675 px** Mobile Background. Keep text in Strapi and check the crop at both sizes. Use the same Rail Products, Display Order, and scheduling workflow as the desktop strip below. The banner remains visible if the product carousel has fewer than two available products.
+
+## Homepage banners with product rails
+
+Create a Promotion with placement `home_promo_rails` and layout `banner_with_rail`. Enter the headline and any subheadline, badge, CTA, or fine print in Strapi. The desktop strip starts at 768 px, with live white copy on the left and room for artwork on the right. Below 768 px, the image stacks above the copy and uses the selected **Theme** for the copy panel.
+
+| Strapi field | Upload | Where it appears |
+| --- | --- | --- |
+| **Desktop Strip Artwork** | Optional, **1920 × 320 px** | Full-width background at 768 px and wider. Leave empty to show TecHaven blue. |
+| **Desktop Background** | Required to publish, **1600 × 900 px** or **2000 × 900 px** | Fallback image above the copy below 768 px. |
+| **Mobile Background** | Optional, **1200 × 675 px** | Replaces Desktop Background below 768 px when provided. |
+
+Give the designer a 1920 × 320 px canvas. Keep the left side visually quiet for live text and place the subject on the right, with space around it for cropping. Keep headlines, badges, and CTA text in Strapi. The storefront adds a left-side contrast overlay when strip artwork is present. **Image Position** affects the small-screen image crop. Desktop copy stays on the left. The small-screen image uses **Alt Text Override**, then the media library alt text, then the headline.
+
+Use **Rail products** to add 2–12 active catalog products. Search by product name, shop or slug. Filter by shop or category, then drag selected products into order or use Move up and Move down. Editors need read access to External Product in Content Manager. For a new product, the seller creates and activates an in-stock listing in commerce. After catalog sync, find it in the picker and add it. Prices, stock and checkout come from commerce.
+
+Set **Display Order** to control where the section appears. Use values such as 10, 20 and 30 to leave room for inserts. The homepage shows up to eight published, in-schedule sections, lowest value first. In Preview, check that the headline and CTA read clearly on the desktop strip, the phone image crops well, and the products appear in the selected order. Publish once both layouts are ready. For a timed countdown, set both start and end times and enable **Show Countdown**. Unpublish to remove a section. If fewer than two products are currently available, shoppers still see the banner.

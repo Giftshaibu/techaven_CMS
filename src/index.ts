@@ -1,6 +1,6 @@
 import type { Core } from "@strapi/strapi";
 import { errors } from "@strapi/utils";
-import { validatePromotion } from "./utils/promotion";
+import { usesRailProducts, validatePromotion } from "./utils/promotion";
 import { seedDefaultPromotions } from "./seed/default-promotions";
 
 const PROMOTION_UID = "api::promotion.promotion";
@@ -13,6 +13,7 @@ export default {
    * This gives you an opportunity to extend code.
    */
   register({ strapi }: { strapi: Core.Strapi }) {
+    strapi.customFields.register({ name: "promotion-products", type: "json" });
     strapi.documents.use(async (context, next) => {
       if (
         context.uid !== PROMOTION_UID ||
@@ -22,6 +23,7 @@ export default {
       }
 
       const params = context.params as any;
+      if (context.action !== "publish" && params.status !== "published") return next();
       let existing: Record<string, unknown> = {};
       if (params.documentId) {
         existing =
@@ -29,6 +31,7 @@ export default {
             documentId: params.documentId,
             status: "draft",
             populate: [
+              "desktopBackground",
               "products",
               "secondaryProducts",
               "anchorProduct",
@@ -37,7 +40,31 @@ export default {
           } as any)) as any) || {};
       }
       const data = { ...existing, ...(params.data || {}) };
+      const usesPicker = usesRailProducts(data.layout);
+
+      if (usesPicker) {
+        const ids: unknown[] = Array.isArray(data.railProducts) ? data.railProducts : [];
+        const validIds = ids.length <= 12 && ids.every((id) => typeof id === "string");
+        const rows = validIds && ids.length
+          ? await strapi.db.query("api::external-product.external-product").findMany({
+              where: { externalId: { $in: ids } },
+            })
+          : [];
+        const byId = new Map(rows.map((row) => [row.externalId, row]));
+        data.products = validIds ? ids.map((id) => byId.get(id) ?? {}) : [{}];
+      }
+
+      if (data.layout === "square_tile" && typeof data.desktopBackground === "number") {
+        data.desktopBackground = await strapi.db.query("plugin::upload.file").findOne({
+          where: { id: data.desktopBackground },
+          select: ["width", "height"],
+        });
+      }
+
       const fieldErrors = validatePromotion(data);
+      if (!usesPicker && (typeof data.headline !== "string" || !data.headline.trim())) {
+        fieldErrors.push({ path: "headline", message: "Headline is required" });
+      }
       if (fieldErrors.length) {
         strapi.log.warn(
           JSON.stringify({

@@ -13,6 +13,8 @@ export const PLACEMENTS = [
   "search_hero",
   "home_banner_1",
   "home_product_rail_1",
+  "home_promo_rails",
+  "home_square_tiles",
   "home_banner_2",
   "home_shop_rail",
   "home_inline_1",
@@ -39,6 +41,9 @@ export const LAYOUTS = [
   "banner",
   "lifestyle_banner",
   "product_rail",
+  "banner_with_rail",
+  "side_banner_with_rail",
+  "square_tile",
   "product_grid",
   "shop_rail",
   "service_grid",
@@ -108,6 +113,10 @@ function isHttpsUrl(value: string): boolean {
   }
 }
 
+export function usesRailProducts(layout: unknown): boolean {
+  return layout === "banner_with_rail" || layout === "side_banner_with_rail" || layout === "square_tile";
+}
+
 export function validatePromotion(data: PromotionData): FieldError[] {
   const errors: FieldError[] = [];
   const startsAt =
@@ -159,6 +168,38 @@ export function validatePromotion(data: PromotionData): FieldError[] {
     });
   }
 
+  const squareTile = data.layout === "square_tile";
+  const bannerRail = data.layout === "banner_with_rail" || data.layout === "side_banner_with_rail";
+  if (bannerRail !== (data.placement === "home_promo_rails")) {
+    errors.push({ path: "layout", message: "Choose a banner rail layout for Homepage Promo Rails" });
+  }
+  if (squareTile !== (data.placement === "home_square_tiles")) {
+    errors.push({ path: "layout", message: "Square tiles require the Homepage Square Tiles placement" });
+  }
+  if ((bannerRail || squareTile) && (typeof data.headline !== "string" || !data.headline.trim()))
+    errors.push({ path: "headline", message: "Headline is required" });
+  if (bannerRail || squareTile) {
+    if (!data.desktopBackground)
+      errors.push({ path: "desktopBackground", message: "Desktop background is required" });
+    else if (squareTile) {
+      const { width, height } = data.desktopBackground as { width?: number; height?: number };
+      if (!width || width !== height)
+        errors.push({ path: "desktopBackground", message: "Upload a square image for this tile" });
+    }
+    const products = Array.isArray(data.products) ? data.products : [];
+    const ids = new Set(products.map((product) => product.externalId));
+    if ((bannerRail || products.length > 0) &&
+        (products.length < 2 || products.length > 12 || ids.size !== products.length ||
+          products.some((product) => !product.externalId || product.active !== true)))
+      errors.push({ path: "railProducts", message: "Select 2 to 12 distinct active products" });
+    if (bannerRail && data.imagePosition != null && !["left", "right"].includes(String(data.imagePosition)))
+      errors.push({ path: "imagePosition", message: "Choose left or right" });
+    if (data.showCountdown && Number.isNaN(startsAt))
+      errors.push({ path: "startsAt", message: "Countdown requires a start date" });
+    if (data.showCountdown && Number.isNaN(endsAt))
+      errors.push({ path: "endsAt", message: "Countdown requires an end date" });
+  }
+
   const label = typeof data.ctaLabel === "string" ? data.ctaLabel.trim() : "";
   const targetType =
     typeof data.targetType === "string" ? data.targetType : "none";
@@ -167,6 +208,13 @@ export function validatePromotion(data: PromotionData): FieldError[] {
   const externalUrl =
     typeof data.externalUrl === "string" ? data.externalUrl.trim() : "";
 
+  if (squareTile && !relationCount(data.products) && (!label || targetType === "none")) {
+    errors.push({ path: "ctaLabel", message: "Add a CTA label and destination for a tile without products" });
+  }
+  if (squareTile && targetType === "internal_path" && targetValue &&
+      (!targetValue.startsWith("/") || /^\/[/\\]/.test(targetValue))) {
+    errors.push({ path: "targetValue", message: "Enter a storefront path starting with a single slash" });
+  }
   if (label && targetType === "none") {
     errors.push({
       path: "targetType",
@@ -210,7 +258,7 @@ export function validatePromotion(data: PromotionData): FieldError[] {
     });
   }
   if (
-    ["split", "service_grid", "card_rail"].includes(String(data.layout)) &&
+    ["split", "service_grid", "card_rail", "square_tile"].includes(String(data.layout)) &&
     !(typeof data.slotGroup === "string" && data.slotGroup.trim())
   ) {
     errors.push({
@@ -343,7 +391,7 @@ export function normalizePromotion(entity: any, publicUrl: string) {
       : null;
   const mediaContext = {
     altTextOverride: entity.altTextOverride,
-    headline: entity.headline,
+    headline: entity.headline ?? "",
   };
   const secondaryType = entity.secondaryTargetType || "none";
   const secondaryTarget =
@@ -363,7 +411,7 @@ export function normalizePromotion(entity: any, publicUrl: string) {
     id: entity.documentId,
     slug: entity.slug,
     eyebrow: entity.eyebrow ?? null,
-    headline: entity.headline,
+    headline: entity.headline ?? "",
     subheadline: entity.subheadline ?? null,
     body: entity.body ?? null,
     campaignIntro: entity.campaignIntro ?? null,
@@ -373,6 +421,7 @@ export function normalizePromotion(entity: any, publicUrl: string) {
     layout: entity.layout,
     presentation: entity.presentation || "standard",
     slotGroup: entity.slotGroup ?? null,
+    displayOrder: entity.displayOrder ?? 100,
     groupOrder: entity.groupOrder ?? 0,
     imagePosition: entity.imagePosition || "right",
     theme: entity.theme,
@@ -381,6 +430,7 @@ export function normalizePromotion(entity: any, publicUrl: string) {
       mediaContext,
       publicUrl,
     ),
+    desktopStripArtwork: normalizeMedia(entity.desktopStripArtwork, mediaContext, publicUrl),
     mobileBackground: normalizeMedia(
       entity.mobileBackground,
       mediaContext,

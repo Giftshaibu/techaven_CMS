@@ -115,7 +115,9 @@ Raw generated CRUD routes are not registered. The public surface consists only o
 
 ## Reconciliation
 
-Reconciliation runs every six hours only when `CATALOG_RECONCILIATION_ENABLED=true`. It consumes the protected Marketplace v2 device/shop cursor feeds and requires `TECHAVEN_COMMERCE_API_URL` plus `TECHAVEN_COMMERCE_API_TOKEN`. Successful cursors are persisted in Strapi's database store; failed runs retain the prior cursor.
+When `CATALOG_RECONCILIATION_ENABLED=true`, Strapi polls the protected Marketplace v2 device/shop event feeds every minute and runs a full snapshot every six hours. Configure `TECHAVEN_COMMERCE_API_URL` and `TECHAVEN_COMMERCE_API_TOKEN`. Feed cursors advance after a successful poll. A full snapshot fills in shop metadata for older references and marks missing references inactive after a complete scan.
+
+For homepage promo rails, deploy the commerce snapshot endpoint first, then the CMS. Wait for a successful full snapshot before opening the picker to editors, then deploy the storefront. Grant editors read access to the External Product collection and its picker fields in Content Manager.
 
 Before enabling it, apply backend migrations, run `npm run catalog:backfill-promotions`, and verify both feeds. Set `RESET_LEGACY_CATALOG_ON_BOOT=true` for one successful CMS boot to clear legacy v1 product relations, then immediately return it to `false`. Keep reconciliation disabled if backfill or connectivity verification fails.
 
