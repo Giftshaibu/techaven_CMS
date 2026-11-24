@@ -135,7 +135,7 @@ The unit and contract suites cover promotion schedules, CTA/layout rules, normal
 ## Production operations
 
 - Terminate HTTPS at a trusted load balancer/reverse proxy, set `PUBLIC_URL`, and set `IS_BEHIND_PROXY=true`.
-- Restrict `FRONTEND_URL` to the required origin(s), protect `/admin`, and audit the Promotion Editor role and all public permissions.
+- Set `FRONTEND_URL` to the required comma-separated origins. CORS also permits `http://localhost:3001` for local storefront development. Protect `/admin`, and audit the Promotion Editor role and all public permissions.
 - Rotate `STRAPI_SYNC_TOKEN` and Strapi secrets through the deployment secret manager; never commit `.env`.
 - Replace local upload storage with a supported object-storage provider before running multiple replicas. Local Docker uploads are persisted but are not shared across hosts.
 - Back up both PostgreSQL and uploads. Test restoration into a separate environment. A database backup without matching media is incomplete.
