@@ -42,7 +42,7 @@ export default {
       const data = { ...existing, ...(params.data || {}) };
       const usesPicker = usesRailProducts(data.layout);
 
-      if (usesPicker) {
+      if (usesPicker && !data.useParticipatingOffers) {
         const ids: unknown[] = Array.isArray(data.railProducts) ? data.railProducts : [];
         const validIds = ids.length <= 12 && ids.every((id) => typeof id === "string");
         const rows = validIds && ids.length

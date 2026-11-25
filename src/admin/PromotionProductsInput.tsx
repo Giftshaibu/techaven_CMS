@@ -27,6 +27,7 @@ export default forwardRef<HTMLInputElement, Props>(function PromotionProductsInp
 ) {
   const selected = Array.isArray(value) ? value : empty;
   const { value: layout } = useField<string>("layout");
+  const { value: useParticipatingOffers } = useField<boolean>("useParticipatingOffers");
   const { get } = useFetchClient();
   const [search, setSearch] = useState("");
   const [shop, setShop] = useState("");
@@ -39,7 +40,7 @@ export default forwardRef<HTMLInputElement, Props>(function PromotionProductsInp
   const [dragged, setDragged] = useState<number | null>(null);
 
   useEffect(() => {
-    if (!usesRailProducts(layout)) return;
+    if (!usesRailProducts(layout) || useParticipatingOffers) return;
     let cancelled = false;
     const timer = window.setTimeout(async () => {
       const params = new URLSearchParams({
@@ -79,7 +80,7 @@ export default forwardRef<HTMLInputElement, Props>(function PromotionProductsInp
       cancelled = true;
       window.clearTimeout(timer);
     };
-  }, [get, layout, selected, search, shop, category, page]);
+  }, [get, layout, selected, search, shop, category, page, useParticipatingOffers]);
 
   const update = (ids: string[]) => onChange({ target: { name, value: ids, type: "json" } });
   const move = (from: number, to: number) => {
@@ -95,10 +96,14 @@ export default forwardRef<HTMLInputElement, Props>(function PromotionProductsInp
       .filter(Boolean).join(" · ");
 
   if (!usesRailProducts(layout)) return null;
+  if (useParticipatingOffers) return (
+    <p>Shop participation is enabled. Publish this promotion, then use Promotions in the staff portal to select shop offers or review seller requests. Only approved, available offers appear on the storefront.</p>
+  );
 
   return (
     <fieldset disabled={disabled} style={{ display: "grid", gap: 8 }}>
       <legend>Rail products</legend>
+      <p>These are catalogue models shared by sellers. To feature specific participating shops, enable useParticipatingOffers and manage their offers in the staff portal.</p>
       <label>
         Search products
         <input ref={ref} value={search} onChange={(event) => { setSearch(event.target.value); setPage(1); }} />

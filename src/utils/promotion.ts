@@ -119,6 +119,9 @@ export function usesRailProducts(layout: unknown): boolean {
 
 export function validatePromotion(data: PromotionData): FieldError[] {
   const errors: FieldError[] = [];
+  if (data.useParticipatingOffers && !usesRailProducts(data.layout)) {
+    errors.push({ path: 'useParticipatingOffers', message: 'Shop participation is available for banner rails and square tiles' });
+  }
   const startsAt =
     typeof data.startsAt === "string" ? Date.parse(data.startsAt) : NaN;
   const endsAt =
@@ -188,7 +191,7 @@ export function validatePromotion(data: PromotionData): FieldError[] {
     }
     const products = Array.isArray(data.products) ? data.products : [];
     const ids = new Set(products.map((product) => product.externalId));
-    if ((bannerRail || products.length > 0) &&
+    if (!data.useParticipatingOffers && (bannerRail || products.length > 0) &&
         (products.length < 2 || products.length > 12 || ids.size !== products.length ||
           products.some((product) => !product.externalId || product.active !== true)))
       errors.push({ path: "railProducts", message: "Select 2 to 12 distinct active products" });
@@ -472,6 +475,7 @@ export function normalizePromotion(entity: any, publicUrl: string) {
       externalId,
       slug,
     })),
+    useParticipatingOffers: entity.useParticipatingOffers === true,
     anchorProductRef: entity.anchorProduct
       ? {
           externalId: entity.anchorProduct.externalId,
